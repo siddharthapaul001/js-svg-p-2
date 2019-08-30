@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SVG Test</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            html, body{
+                padding: 0;
+                margin: 0;
+            }
+            .btn-container{
+                display: flex;
+                height: 60px;
+                justify-content: center;
+            }
+        </style>
+        <script src="js/index.js"></script>
+    </head>
+    <body>
+        <div id="svg-container" class="svg-container">
+            
+        </div>
+        <script>
+
+            function createSVG(parentElement, height, width){
+                let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svg.setAttribute("height", height);
+                svg.setAttribute("width", width);
+                parentElement.appendChild(svg);
+                return svg;
+            }
+
+            function calculatePositions(width, height){
+                let str = "M" + width / 2 + "," + 0;
+                str += " l" + (0.25 * width) + "," + (0.2 * height);
+                str += " h" + (0.25 * width);
+                str += " l-" + (0.2 * width) + "," + (0.25 * height);
+                str += " l" + (0.2 * width) + "," + (0.25 * height);
+                str += " l-" + (0.5 * width) + ",-" + (0.2 * height);
+                str += " l-" + (0.5 * width) + "," + (0.2 * height);
+                str += " l" + (0.2 * width) + ",-" + (0.3 * height);
+                str += " l-" + (0.2 * width) + ",-" + (0.2 * height);
+                str += " h" + (0.25 * width);
+                str += " z"; 
+                return str;
+            }
+
+            function createStar(){
+                let svg = createSVG(document.getElementById("svg-container"), 200, 200), 
+                star = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                star.setAttribute("d", calculatePositions(200, 200));
+                star.setAttribute("style", "fill:#ff0;stroke:#ff0;stroke-width:3");
+                svg.appendChild(star);
+                document.getElementById("svg-container").appendChild(svg);
+            }
+
+            createStar();
+        </script>
+    </body>
+</html>
