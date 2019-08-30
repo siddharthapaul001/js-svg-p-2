@@ -1,32 +1,30 @@
-class SVGElement {
-    constructor(){
-        this.attributes = {}
-    }
-    getMe(tagName){
-        let elem = document.createElementNS("http://www.w3.org/2000/svg", tagName);
-        for(let attributeName in this.attributes){
-            if(Array.isArray(this.attributes)){
-                elem.setAttribute(attributeName, this.attributes[attributeName].map(point => point.trim()).join(" "));
-            }else{
-                elem.setAttribute(attributeName, this.attributes[attributeName]);
-            }
-        }
-        return elem;
-    }
+function calculatePositions(parentWidth, parentHeight){
+    let side = parentWidth < parentHeight ?  parentWidth : parentHeight;
+    let str = "M" + ((side + (parentWidth - side)) / 2) + "," + (parentHeight - side) / 2;
+    str += " l" + (0.2 * side) + "," + (0.3 * side);
+    str += " h" + (0.3 * side);
+    str += " l-" + (0.2 * side) + "," + (0.3 * side);
+    str += " l" + (0.2 * side) + "," + (0.4 * side);
+    str += " l-" + (0.5 * side) + ",-" + (0.3 * side);
+    str += " l-" + (0.5 * side) + "," + (0.3 * side);
+    str += " l" + (0.2 * side) + ",-" + (0.4 * side);
+    str += " l-" + (0.2 * side) + ",-" + (0.3 * side);
+    str += " h" + (0.3 * side);
+    str += " z"; 
+    return str;
 }
 
-class Star extends SVGAElement{
-    constructor(){
-        super();
-        this.attributes = {
-            d: [
-                "M25,25",
-                "l20,0"
-            ]
-        }
+function createStar(parentElement, width, height, styles){
+    let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
+    star = document.createElementNS("http://www.w3.org/2000/svg", "path"),
+    styleStr = '';
+    svg.setAttribute("height", height);
+    svg.setAttribute("width", width);
+    star.setAttribute("d", calculatePositions(width, height));
+    for(let attrib in styles){
+        styleStr += attrib + ':' + styles[attrib] + ';';
     }
-
-    getElement(){
-        return getMe("path");
-    }
+    star.setAttribute("style", styleStr);
+    svg.appendChild(star);
+    parentElement.appendChild(svg);
 }
