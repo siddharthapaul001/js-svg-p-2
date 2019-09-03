@@ -10,11 +10,15 @@
             
         </div>
         <script>
-            createStar(document.getElementById("svg-container"), "400px", "100px", 'row', {
-                "fill": "#ff0",
-                "stroke": "#000",
-                "stroke-width": "10px"
-            }, 10);
+            createStar(document.getElementById("svg-container"), "1200px", "600px", 4.68, {
+                "direction": "row",
+                "rated": {
+                    "fill": "#ff0"
+                },
+                "nonrated": {
+                    "fill": "#ddd"
+                }
+            }, 5);
         </script>
     </body>
 </html>
