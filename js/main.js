@@ -155,9 +155,17 @@ function createStar(parentElement, width, height, rating, styles, N = 5){
 
         linearGradient.setAttribute("id", "partial-fill");
         linearGradient.setAttribute("x1", "0%");
-        linearGradient.setAttribute("x2", "100%");
+        if(direction == 'row'){
+            linearGradient.setAttribute("x2", "100%");
+        }else if(direction == 'column'){
+            linearGradient.setAttribute("x2", "0%");
+        }
         linearGradient.setAttribute("y1", "0%");
-        linearGradient.setAttribute("y2", "0%");
+        if(direction == 'column'){
+            linearGradient.setAttribute("y2", "100%");
+        }else if(direction == 'row'){
+            linearGradient.setAttribute("y2", "0%");
+        }
 
         RatedStart.setAttribute("offset", "0%");
         RatedEnd.setAttribute("offset", ((rating - Math.floor(rating)).toFixed(2) * 100) + "%");
@@ -238,7 +246,7 @@ function createStar(parentElement, width, height, rating, styles, N = 5){
             return;
         }
         if(strokeWidth.num > 0 && isFraction(rating)){
-            console.warn("stroke can result incorrect visualization of rating");
+            console.warn("Stroke can result incorrect visualization of fractional rating");
         }
         if(N % 2 == 0){
             stars[i].setAttribute("d", calculatePositions(svg.clientWidth, svg.clientHeight, strokeWidth.num, strokeWidth.unit, xShift * (i - (Math.floor(N/2)) + 0.5), yShift * (i - (Math.floor(N/2)) + 0.5), direction));
