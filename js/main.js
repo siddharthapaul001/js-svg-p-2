@@ -43,6 +43,7 @@ function calculatePositions(parentWidth, parentHeight, strokeWidth, unit, xShift
         console.error('Must provide stroke width in pixels');
         return;
     }
+    N = globalThis.N;
     let h = direction == 'row' ? parentWidth / N : parentWidth;
     let w = direction == 'column' ? parentHeight / N : parentHeight;
     let side = Math.min(h, w) - Math.max(strokeWidth * 4, 4),
@@ -163,6 +164,30 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
         }
     }
 
+    for (let i in allowedStyles) {
+        if (styles['rated'] && styles['rated'].hasOwnProperty(allowedStyles[i].styleName)) {
+            if (styles['rated'][allowedStyles[i].styleName].match(allowedStyles[i].regex)) {
+                styleStr['rated'] += allowedStyles[i].styleName + ':' + styles['rated'][allowedStyles[i].styleName] + ';';
+                styleStr['partial'] += allowedStyles[i].styleName == 'fill' || allowedStyles[i].styleName == 'stroke' ? '' : allowedStyles[i].styleName + ':' + styles['rated'][allowedStyles[i].styleName] + ';';
+            } else {
+                console.error(allowedStyles[i].err);
+                return;
+            }
+        } else if (allowedStyles[i].hasOwnProperty('default')) {
+            styleStr['rated'] += allowedStyles[i].styleName + ':' + allowedStyles[i].default['rated'] + ';';
+        }
+        if (styles['nonrated'] && styles['nonrated'].hasOwnProperty(allowedStyles[i].styleName)) {
+            if (styles['nonrated'][allowedStyles[i].styleName].match(allowedStyles[i].regex)) {
+                styleStr['nonrated'] += allowedStyles[i].styleName + ':' + styles['nonrated'][allowedStyles[i].styleName] + ';';
+            } else {
+                console.error(allowedStyles[i].err);
+                return;
+            }
+        } else if (allowedStyles[i].hasOwnProperty('default')) {
+            styleStr['nonrated'] += allowedStyles[i].styleName + ':' + allowedStyles[i].default['nonrated'] + ';';
+        }
+    }
+
 
     if (direction == 'row') {
         if (strokeWidth.num > Math.min(svg.clientWidth / (10 * N), svg.clientHeight / 10)) {
@@ -175,23 +200,35 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
             return;
         }
     }
+    if(strokeWidth.unit == '%'){
+        console.error("provide stroke width in pixels only");
+        return;
+    }
 
     //create definitions
     if (isFraction(rating)) {
         let defs = document.createElementNS("http://www.w3.org/2000/svg", "defs"),
             linearGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient"),
+            strokeLinearGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient"),
             RatedStart = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
             RatedEnd = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
             NonRatedStart = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
             NonRatedEnd = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
+            strokeRatedStart = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
+            strokeRatedEnd = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
+            strokeNonRatedStart = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
+            strokeNonRatedEnd = document.createElementNS("http://www.w3.org/2000/svg", "stop"),
             ratedFill = allowedStyles[2].default['rated'],
-            nonratedFill = allowedStyles[2].default['nonrated'];
+            nonratedFill = allowedStyles[2].default['nonrated'],
+            ratedStroke = allowedStyles[1].default['rated'];
+            nonratedStroke = allowedStyles[1].default['nonrated'];
 
+        
         if (styles['rated'] && styles['rated'].hasOwnProperty('fill')) {
             if (styles['rated']['fill'].match(allowedStyles[2].regex)) {
                 ratedFill = styles['rated']['fill'];
             } else {
-                console.error(allowedStyles[i].err);
+                console.error(allowedStyles[2].err);
                 return;
             }
         }
@@ -199,7 +236,24 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
             if (styles['nonrated']['fill'].match(allowedStyles[2].regex)) {
                 nonratedFill = styles['nonrated']['fill'];
             } else {
-                console.error(allowedStyles[i].err);
+                console.error(allowedStyles[2].err);
+                return;
+            }
+        }
+
+        if (styles['rated'] && styles['rated'].hasOwnProperty('stroke')) {
+            if (styles['rated']['stroke'].match(allowedStyles[1].regex)) {
+                ratedStroke = styles['rated']['stroke'];
+            } else {
+                console.error(allowedStyles[1].err);
+                return;
+            }
+        }
+        if (styles['nonrated'] && styles['nonrated'].hasOwnProperty('stroke')) {
+            if (styles['nonrated']['stroke'].match(allowedStyles[1].regex)) {
+                nonratedStroke = styles['nonrated']['stroke'];
+            } else {
+                console.error(allowedStyles[1].err);
                 return;
             }
         }
@@ -218,6 +272,20 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
             linearGradient.setAttribute("y2", "0%");
         }
 
+        strokeLinearGradient.setAttribute("id", "partial-stroke");
+        strokeLinearGradient.setAttribute("x1", "0%");
+        if (direction == 'row') {
+            strokeLinearGradient.setAttribute("x2", "100%");
+        } else if (direction == 'column') {
+            strokeLinearGradient.setAttribute("x2", "0%");
+        }
+        strokeLinearGradient.setAttribute("y1", "0%");
+        if (direction == 'column') {
+            strokeLinearGradient.setAttribute("y2", "100%");
+        } else if (direction == 'row') {
+            strokeLinearGradient.setAttribute("y2", "0%");
+        }
+
         RatedStart.setAttribute("offset", "0%");
         RatedEnd.setAttribute("offset", ((rating - Math.floor(rating)).toFixed(2) * 100) + "%");
         NonRatedStart.setAttribute("offset", ((rating - Math.floor(rating)).toFixed(2) * 100) + "%");
@@ -227,11 +295,27 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
         NonRatedStart.setAttribute("style", "stop-color:" + nonratedFill + ";stop-opacity:1;");
         NonRatedEnd.setAttribute("style", "stop-color:" + nonratedFill + ";stop-opacity:1;");
 
+        strokeRatedStart.setAttribute("offset", "0%");
+        strokeRatedEnd.setAttribute("offset", ((rating - Math.floor(rating)).toFixed(2) * 100) + "%");
+        strokeNonRatedStart.setAttribute("offset", ((rating - Math.floor(rating)).toFixed(2) * 100) + "%");
+        strokeNonRatedEnd.setAttribute("offset", "100%");
+        strokeRatedStart.setAttribute("style", "stop-color:" + ratedStroke + ";stop-opacity:1;");
+        strokeRatedEnd.setAttribute("style", "stop-color:" + ratedStroke + ";stop-opacity:1;");
+        strokeNonRatedStart.setAttribute("style", "stop-color:" + nonratedStroke + ";stop-opacity:1;");
+        strokeNonRatedEnd.setAttribute("style", "stop-color:" + nonratedStroke + ";stop-opacity:1;");
+
         linearGradient.appendChild(RatedStart);
         linearGradient.appendChild(RatedEnd);
         linearGradient.appendChild(NonRatedStart);
         linearGradient.appendChild(NonRatedEnd);
+
+        strokeLinearGradient.appendChild(strokeRatedStart);
+        strokeLinearGradient.appendChild(strokeRatedEnd);
+        strokeLinearGradient.appendChild(strokeNonRatedStart);
+        strokeLinearGradient.appendChild(strokeNonRatedEnd);
+
         defs.appendChild(linearGradient);
+        defs.appendChild(strokeLinearGradient);
         svg.appendChild(defs);
     }
 
@@ -275,32 +359,10 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
         }
     }
 
-    for (let i in allowedStyles) {
-        if (styles['rated'] && styles['rated'].hasOwnProperty(allowedStyles[i].styleName)) {
-            if (styles['rated'][allowedStyles[i].styleName].match(allowedStyles[i].regex)) {
-                styleStr['rated'] += allowedStyles[i].styleName + ':' + styles['rated'][allowedStyles[i].styleName] + ';';
-                styleStr['partial'] += allowedStyles[i].styleName == 'fill' ? '' : allowedStyles[i].styleName + ':' + styles['rated'][allowedStyles[i].styleName] + ';';
-            } else {
-                console.error(allowedStyles[i].err);
-                return;
-            }
-        } else if (allowedStyles[i].hasOwnProperty('default')) {
-            styleStr['rated'] += allowedStyles[i].styleName + ':' + allowedStyles[i].default['rated'] + ';';
-        }
-        if (styles['nonrated'] && styles['nonrated'].hasOwnProperty(allowedStyles[i].styleName)) {
-            if (styles['nonrated'][allowedStyles[i].styleName].match(allowedStyles[i].regex)) {
-                styleStr['nonrated'] += allowedStyles[i].styleName + ':' + styles['nonrated'][allowedStyles[i].styleName] + ';';
-            } else {
-                console.error(allowedStyles[i].err);
-                return;
-            }
-        } else if (allowedStyles[i].hasOwnProperty('default')) {
-            styleStr['nonrated'] += allowedStyles[i].styleName + ':' + allowedStyles[i].default['nonrated'] + ';';
-        }
-    }
     for (let i = 0; i < stars.length; i++) {
         if (isFraction(rating) && Math.ceil(rating) == i + 1) {
             stars[i].setAttribute("fill", "url(#partial-fill)");
+            stars[i].setAttribute("stroke", "url(#partial-stroke)");
             stars[i].setAttribute("style", styleStr['partial']);
         } else {
             stars[i].setAttribute("style", i < Math.ceil(rating) ? styleStr['rated'] : styleStr['nonrated']);

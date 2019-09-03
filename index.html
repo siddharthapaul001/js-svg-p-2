@@ -1,26 +1,24 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>SVG Test</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="js/main.js"></script>
-    </head>
-    <body>
-        <div id="svg-container" class="svg-container">
-            
-        </div>
-        <script>
-            createStar(document.getElementById("svg-container"), "1200px", "600px", 4.5, 5, {
-                "direction": "row",
-                "rated": {
-                    "fill": "#ff0",
-                    "stroke": "#000"
-                },
-                "nonrated": {
-                    "fill": "#ddd",
-                    "stroke": "#f00"
-                }
-            });
-        </script>
-    </body>
+
+<head>
+    <title>SVG Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="js/main.js"></script>
+</head>
+
+<body>
+    <div id="svg-container" class="svg-container">
+
+    </div>
+    <script>
+        createStar(document.getElementById("svg-container"), "1200", "600", 4.5, 10, {
+            "direction": "column",
+            "rated": {
+                "fill": "#000"
+            }
+        });
+    </script>
+</body>
+
 </html>
