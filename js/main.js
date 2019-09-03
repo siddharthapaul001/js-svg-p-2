@@ -89,7 +89,7 @@ function isFraction(num) {
 }
 
 
-function createStar(parentElement, width, height, rating, styles, N = 5) {
+function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}) {
     let svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"),
         stars = [],
         styleStr = { 'rated': '', 'nonrated': '', 'partial': '' },
@@ -97,8 +97,14 @@ function createStar(parentElement, width, height, rating, styles, N = 5) {
         direction = styles['direction'],
         strokeWidth = styles["stroke-width"] ? pluckSize(styles["stroke-width"]) : 0;
 
+    if (!(parentElement instanceof HTMLElement)) {
+        console.error("First argument must be a html element");
+        return;
+    }
+
     if (isNaN(+N)) {
         console.error("Number of stars must be in numeric value");
+        return;
     }
     if (!strokeWidth.num) {
         strokeWidth = {
@@ -109,12 +115,11 @@ function createStar(parentElement, width, height, rating, styles, N = 5) {
     if (strokeWidth.num > 0 && isFraction(rating)) {
         console.warn("Stroke can result incorrect visualization of fractional rating");
     }
-    console.log(strokeWidth);
 
-    if(!styles['rated']){
+    if (!styles['rated']) {
         styles['rated'] = {};
     }
-    if(!styles['nonrated']){
+    if (!styles['nonrated']) {
         styles['nonrated'] = {};
     }
     styles['rated']['stroke-width'] = strokeWidth.num + strokeWidth.unit;
@@ -122,8 +127,17 @@ function createStar(parentElement, width, height, rating, styles, N = 5) {
     globalThis.N = +N;
     rating = +rating;
 
-    if (!(parentElement instanceof HTMLElement)) {
-        console.error("First argument must be a html element");
+    if (N <= 0) {
+        console.error('N must be a positive number > 0');
+        return;
+    }
+
+    if (isNaN(rating)) {
+        console.error('Expecting rating as number');
+        return;
+    }
+    if (rating > N || rating < 0) {
+        console.error("rating must be a positive number less than or equals to number of stars");
         return;
     }
 
@@ -145,12 +159,12 @@ function createStar(parentElement, width, height, rating, styles, N = 5) {
     }
 
 
-    if(direction == 'row'){
+    if (direction == 'row') {
         if (strokeWidth.num > Math.min(svg.clientWidth / (10 * N), svg.clientHeight / 10)) {
             console.error("Incorrect value of stroke width");
             return;
         }
-    }else if(direction == 'column'){
+    } else if (direction == 'column') {
         if (strokeWidth.num > Math.min(svg.clientHeight / (10 * N), svg.clientWidth / 10)) {
             console.error("Incorrect value of stroke width");
             return;
@@ -229,19 +243,6 @@ function createStar(parentElement, width, height, rating, styles, N = 5) {
             return;
         }
     }
-    if (N <= 0) {
-        console.error('N must be a positive number > 0');
-        return;
-    }
-
-    if (isNaN(rating)) {
-        console.error('Expecting rating as number');
-        return;
-    }
-    if (rating > N || rating < 0) {
-        console.error("rating must be a positive number less than or equals to number of stars");
-        return;
-    }
 
     if (direction == 'row') {
         if (styles["justify-content"] == "streach") {
@@ -293,11 +294,11 @@ function createStar(parentElement, width, height, rating, styles, N = 5) {
         }
     }
     for (let i = 0; i < stars.length; i++) {
-        if (isFraction(rating) && Math.floor(rating) == i + 1) {
+        if (isFraction(rating) && Math.ceil(rating) == i + 1) {
             stars[i].setAttribute("fill", "url(#partial-fill)");
             stars[i].setAttribute("style", styleStr['partial']);
         } else {
-            stars[i].setAttribute("style", i < Math.floor(rating) ? styleStr['rated'] : styleStr['nonrated']);
+            stars[i].setAttribute("style", i < Math.ceil(rating) ? styleStr['rated'] : styleStr['nonrated']);
         }
         svg.appendChild(stars[i]);
     }
