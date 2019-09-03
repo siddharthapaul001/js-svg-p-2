@@ -145,6 +145,11 @@ function createStar(parentElement, width = 0, height = 0, rating, N, styles = {}
         stars.push(document.createElementNS("http://www.w3.org/2000/svg", "path"));
     }
 
+    if(!pluckSize(height).num || !pluckSize(width).num){
+        console.error("Put the height width correctly.");
+        return;
+    }
+
     svg.setAttribute("height", height);
     svg.setAttribute("width", width);
     parentElement.appendChild(svg);
